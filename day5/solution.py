@@ -4,7 +4,11 @@ from collections import UserDict
 
 def main():
     stack_data, command_data = parse_input()
-    print(stack_data, command_data)
+    stacks = Stacks(stack_data)
+    commands = CommandUtils.parse_commands(command_data)
+    stacks = Crane.execute_crane_commands(stacks, commands)
+    pt1_answer = stacks.get_top_of_stacks()
+    print(pt1_answer)
 
 
 class Stacks(UserDict):
@@ -29,6 +33,13 @@ class Stacks(UserDict):
                 if val != " ":
                     self[str(idx + 1)].append(val)
 
+    def get_top_of_stacks(self):
+        combined_top = ""
+        for stack in self.values():
+            top = stack[-1]
+            combined_top += top
+        return combined_top
+
 
 class Crane:
     @classmethod
@@ -41,10 +52,18 @@ class Crane:
 
         return stacks
 
+    @classmethod
+    def execute_crane_commands(
+        cls, stacks: Stacks, commands: list[tuple[str]]
+    ) -> Stacks:
+        for cmd in commands:
+            stacks = cls.move_boxes(stacks, *cmd)
+        return stacks
+
 
 class CommandUtils:
     @classmethod
-    def parse_commands(self, command_data: list[str]) -> list[list]:
+    def parse_commands(cls, command_data: list[str]) -> list[list]:
         re_commands = r"move (\d+) from (\d+) to (\d+)"
         return [re.search(re_commands, line).groups() for line in command_data]
 

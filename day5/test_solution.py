@@ -11,12 +11,24 @@ def sample_stacks():
         " 1   2   3 ",
     ]
 
+
 @pytest.fixture
 def sample_stacks_first_move():
     return [
         "[D]        ",
         "[N] [C]    ",
         "[Z] [M] [P]",
+        " 1   2   3 ",
+    ]
+
+
+@pytest.fixture
+def sample_stacks_final():
+    return [
+        "        [Z]",
+        "        [N]",
+        "        [D]",
+        "[C] [M] [P]",
         " 1   2   3 ",
     ]
 
@@ -47,6 +59,21 @@ def test_stacks_move_boxes(sample_stacks, sample_stacks_first_move):
     expected_stacks = Stacks(sample_stacks_first_move)
     stacks = Stacks(sample_stacks)
     command = ("1", "2", "1")
-    
+
     moved_stacks = Crane.move_boxes(stacks, *command)
     assert expected_stacks == moved_stacks
+
+
+def test_execute_crane_commands(sample_stacks, sample_stacks_final, sample_commands):
+    expected_stacks = Stacks(sample_stacks_final)
+    commands = CommandUtils.parse_commands(sample_commands)
+    stacks = Stacks(sample_stacks)
+
+    stacks = Crane.execute_crane_commands(stacks, commands)
+    assert expected_stacks == stacks
+
+
+def test_get_top_of_stacks(sample_stacks_final):
+    stacks = Stacks(sample_stacks_final)
+    top = stacks.get_top_of_stacks()
+    assert "CMZ" == top
