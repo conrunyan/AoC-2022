@@ -44,6 +44,9 @@ def test_parse_commands(sample_commands):
 
 
 def test_stacks_move_boxes(sample_stacks, sample_stacks_first_move):
+    expected_stacks = Stacks(sample_stacks_first_move)
     stacks = Stacks(sample_stacks)
-    stacks.build_stacks(sample_stacks)
-    moved_stacks = {}
+    command = ("1", "2", "1")
+    
+    moved_stacks = Crane.move_boxes(stacks, *command)
+    assert expected_stacks == moved_stacks

@@ -23,20 +23,17 @@ class Stacks(UserDict):
         for name in stack_names:
             self[name] = []
 
-        print(self)
         for line in rev_lines[1:]:
             line_chars = self._get_chars_from_line(line)
             for idx, val in enumerate(line_chars):
                 if val != " ":
                     self[str(idx + 1)].append(val)
 
-        print(self)
-
 
 class Crane:
     @classmethod
     def move_boxes(
-        stacks: Stacks, move_count: str, move_from: str, move_to: str
+        cls, stacks: Stacks, move_count: str, move_from: str, move_to: str
     ) -> Stacks:
         for n in range(int(move_count)):
             box = stacks[move_from].pop()
