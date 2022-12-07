@@ -2,15 +2,6 @@ import re
 from collections import UserDict
 
 
-def main():
-    stack_data, command_data = parse_input()
-    stacks = Stacks(stack_data)
-    commands = CommandUtils.parse_commands(command_data)
-    stacks = Crane.execute_crane_commands(stacks, commands)
-    pt1_answer = stacks.get_top_of_stacks()
-    print(pt1_answer)
-
-
 class Stacks(UserDict):
     def __init__(self, stack_input: list[str], *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -53,11 +44,37 @@ class Crane:
         return stacks
 
     @classmethod
+    def move_boxes_keep_order(
+        cls, stacks: Stacks, move_count: str, move_from: str, move_to: str
+    ) -> Stacks:
+        crane_storage = []
+        for n in range(int(move_count)):
+            box = stacks[move_from].pop()
+            crane_storage.append(box)
+
+        for box in reversed(crane_storage):
+            stacks[move_to].append(box)
+
+        return stacks
+
+    @classmethod
     def execute_crane_commands(
-        cls, stacks: Stacks, commands: list[tuple[str]]
+        cls,
+        stacks: Stacks,
+        commands: list[tuple[str]],
     ) -> Stacks:
         for cmd in commands:
             stacks = cls.move_boxes(stacks, *cmd)
+        return stacks
+
+    @classmethod
+    def execute_crane_commands_keep_order(
+        cls,
+        stacks: Stacks,
+        commands: list[tuple[str]],
+    ) -> Stacks:
+        for cmd in commands:
+            stacks = cls.move_boxes_keep_order(stacks, *cmd)
         return stacks
 
 
@@ -66,6 +83,20 @@ class CommandUtils:
     def parse_commands(cls, command_data: list[str]) -> list[list]:
         re_commands = r"move (\d+) from (\d+) to (\d+)"
         return [re.search(re_commands, line).groups() for line in command_data]
+
+
+def part_1(stack_data: Stacks, commands: list[tuple[str]]):
+    stacks = Stacks(stack_data)
+    stacks = Crane.execute_crane_commands(stacks, commands)
+    answer = stacks.get_top_of_stacks()
+    print("PART 1:", answer)
+
+
+def part_2(stack_data: Stacks, commands: list[tuple[str]]):
+    stacks = Stacks(stack_data)
+    stacks = Crane.execute_crane_commands_keep_order(stacks, commands)
+    answer = stacks.get_top_of_stacks()
+    print("PART 2:", answer)
 
 
 def parse_input():
@@ -77,6 +108,14 @@ def parse_input():
     command_data = lines[split_idx + 1 :]
 
     return stack_data, command_data
+
+
+def main():
+    stack_data, command_data = parse_input()
+    commands = CommandUtils.parse_commands(command_data)
+
+    part_1(stack_data, commands)
+    part_2(stack_data, commands)
 
 
 if __name__ == "__main__":

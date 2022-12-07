@@ -34,6 +34,17 @@ def sample_stacks_final():
 
 
 @pytest.fixture
+def sample_stacks_final_pt2():
+    return [
+        "        [D]",
+        "        [N]",
+        "        [Z]",
+        "[M] [C] [P]",
+        " 1   2   3 ",
+    ]
+
+
+@pytest.fixture
 def sample_commands():
     return [
         "move 1 from 2 to 1",
@@ -70,6 +81,17 @@ def test_execute_crane_commands(sample_stacks, sample_stacks_final, sample_comma
     stacks = Stacks(sample_stacks)
 
     stacks = Crane.execute_crane_commands(stacks, commands)
+    assert expected_stacks == stacks
+
+
+def test_execute_crane_commands_keep_order(
+    sample_stacks, sample_stacks_final_pt2, sample_commands
+):
+    expected_stacks = Stacks(sample_stacks_final_pt2)
+    commands = CommandUtils.parse_commands(sample_commands)
+    stacks = Stacks(sample_stacks)
+
+    stacks = Crane.execute_crane_commands_keep_order(stacks, commands)
     assert expected_stacks == stacks
 
 
