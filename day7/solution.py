@@ -31,7 +31,8 @@ class Dir:
         print(f"Adding file '{size} {name}' to {self}")
         self.files.append(File(name, size))
 
-    def get_dir_size(self):
+    # TODO: Add ability to capture size of each dir, recursively
+    def get_dir_size(self) -> int:
         file_sizes = [f.size for f in self.files]
         dir_sizes = [d.get_dir_size() for d in self.sub_dirs.values()]
         return sum([*file_sizes, *dir_sizes])
@@ -97,17 +98,21 @@ class Terminal:
 
     def execute_commands(self, commands: list[Command]):
         for command in commands:
+
+            # Handling directory movement
             if command.cmd.startswith("cd"):
                 _, target_dir = command.cmd.split()
                 if target_dir == "..":
                     self.cur_dir = self.cur_dir.parent
                 elif target_dir == "/":
                     self.cur_dir = self.root
-                # TODO: Add code to handle ..
                 else:
                     self.cur_dir = self.cur_dir.sub_dirs[target_dir]
+
+            # Handling output of ls (technically just creates the directory and its content)
             elif command.cmd.startswith("ls"):
                 self.cur_dir = self.load_ls_results(self.cur_dir, command.results)
+
             else:
                 print(f"WTF? Unknown command {command}")
 
