@@ -37,15 +37,40 @@ class Dir:
         return sum([*file_sizes, *dir_sizes])
 
 
+class Command:
+    def __init__(self, cmd: str):
+        self.cmd = cmd
+        self.results = []
+
+    def __repr__(self):
+        return f"{self.cmd} - {self.results}"
+
+    def add_result(self, line: str):
+        self.results.append(line)
+
+
 class CommandUtils:
     @classmethod
-    def parse_commands(self, raw_cmds: list[str]):
-        pass
+    def parse_commands(self, input_lines: list[str]) -> list[Command]:
+        all_cmds = []
+        cmd = Command(input_lines[0][2:])
+        for line in input_lines[1:]:
+            if line.startswith("$"):
+                print(f"New command {line} found")
+                all_cmds.append(cmd)
+                cmd = Command(line[2:])
+            else:
+                cmd.add_result(line)
+
+        all_cmds.append(cmd)
+
+        return all_cmds
 
 
 class Terminal:
     def __init__(self):
-        self.cur_dir = None
+        self.root = Dir("/")
+        self.cur_dir = self.root
 
     def cd(self, name: str):
         print(f"Moving from {self.cur_dir} to {name}")
@@ -69,6 +94,22 @@ class Terminal:
             name = sub_dir.split()[1]
             cur_dir.add_sub_dir(name)
         return cur_dir
+
+    def execute_commands(self, commands: list[Command]):
+        for command in commands:
+            if command.cmd.startswith("cd"):
+                _, target_dir = command.cmd.split()
+                if target_dir == "..":
+                    self.cur_dir = self.cur_dir.parent
+                elif target_dir == "/":
+                    self.cur_dir = self.root
+                # TODO: Add code to handle ..
+                else:
+                    self.cur_dir = self.cur_dir.sub_dirs[target_dir]
+            elif command.cmd.startswith("ls"):
+                self.cur_dir = self.load_ls_results(self.cur_dir, command.results)
+            else:
+                print(f"WTF? Unknown command {command}")
 
 
 def part_1(input_data):
