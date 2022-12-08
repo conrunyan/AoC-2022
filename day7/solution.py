@@ -31,7 +31,6 @@ class Dir:
         print(f"Adding file '{size} {name}' to {self}")
         self.files.append(File(name, size))
 
-    # TODO: Add ability to capture size of each dir, recursively
     def get_dir_size(self) -> int:
         file_sizes = [f.size for f in self.files]
         dir_sizes = [d.get_dir_size() for d in self.sub_dirs.values()]
@@ -76,6 +75,23 @@ class Terminal:
     def cd(self, name: str):
         print(f"Moving from {self.cur_dir} to {name}")
         self.cur_dir = self.cur_dir[name]
+
+    def list_dir_sizes(self, target_dir: Dir) -> dict[str, int]:
+        print(f"Getting size of dir {target_dir}")
+        dirs = {}
+
+        # No more dirs to search. Get size and stop here.
+        if not target_dir.sub_dirs:
+            dir_key = f"{target_dir.parent.name}-{target_dir.name}"
+            solo_dir = {dir_key: target_dir.get_dir_size()}
+            return solo_dir
+
+        for dir in target_dir.sub_dirs.values():
+            dir_key = f"{dir.parent.name}-{dir.name}"
+            dirs[dir_key] = dir.get_dir_size()
+            sub_sizes = self.list_dir_sizes(dir)
+            dirs = {**dirs, **sub_sizes}
+        return dirs
 
     def load_ls_results(self, cur_dir: Dir, ls_results: list[str]):
         dirs = [res for res in ls_results if res.startswith("dir")]

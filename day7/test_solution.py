@@ -49,8 +49,23 @@ def sample_cmd_input():
         "29116 f",
         "2557 g",
         "62596 h.lst",
-        "$ cd .."
+        "$ cd e",
+        "$ ls",
+        "584 i",
+        "$ cd ..",
+        "$ cd ..",
+        "$ cd d",
+        "$ ls",
+        "4060174 j",
+        "8033020 d.log",
+        "5626152 d.ext",
+        "7214296 k",
     ]
+
+
+@pytest.fixture
+def sample_parsed_commands(sample_cmd_input):
+    return CommandUtils.parse_commands(sample_cmd_input)
 
 
 def test_get_dir_size(sample_dir_with_subdirs: Dir):
@@ -73,7 +88,7 @@ def test_create_sub_dirs_from_ls(sample_ls):
 def test_parse_commands(sample_cmd_input):
     results = CommandUtils.parse_commands(sample_cmd_input)
 
-    assert len(results) == 5
+    assert len(results) == 10
     assert results[0].cmd == "cd /"
     assert results[0].results == []
 
@@ -81,10 +96,19 @@ def test_parse_commands(sample_cmd_input):
     assert results[1].results == ["dir a", "14848514 b.txt", "8504156 c.dat", "dir d"]
 
 
-def test_execute_commands_cd_(sample_cmd_input):
-    commands = CommandUtils.parse_commands(sample_cmd_input)
+def test_execute_commands_cd(sample_parsed_commands):
     term = Terminal()
-    term.execute_commands(commands)
-    
-    assert term.cur_dir.name == "/"
-    assert term.cur_dir.get_dir_size() == 23446939
+    term.execute_commands(sample_parsed_commands)
+
+    assert term.cur_dir.name == "d"
+    assert term.root.get_dir_size() == 48381165
+
+
+def test_list_dir_sizes(sample_parsed_commands):
+    term = Terminal()
+    term.execute_commands(sample_parsed_commands)
+    expected = {"/-a": 94853, "a-e": 584, "/-d": 24933642}
+
+    sizes = term.list_dir_sizes(term.root)
+
+    assert sizes == expected
