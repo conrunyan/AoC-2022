@@ -104,14 +104,16 @@ class Terminal:
 
         # No more dirs to search. Get size and stop here.
         if not target_dir.sub_dirs:
-            dir_key = f"{target_dir.parent.name}-{target_dir.name}"
+            dir_key = f"{target_dir.parent.name}-{target_dir.name}-{str(uuid4())}"
             solo_dir = {dir_key: target_dir.get_dir_size()}
             return solo_dir
 
         for dir in target_dir.sub_dirs.values():
-            dir_key = f"{dir.parent.name}-{dir.name}"
-            dirs[dir_key] = dir.get_dir_size()
             sub_sizes = self.list_dir_sizes(dir)
+            if dir.sub_dirs:
+                cur_size = dir.get_dir_size()
+                dir_key = f"{dir.parent.name}-{dir.name}-{str(uuid4())}"
+                dirs[dir_key] = cur_size
             dirs = {**dirs, **sub_sizes}
         return dirs
 
@@ -154,12 +156,32 @@ def part_1(input_data):
     commands = CommandUtils.parse_commands(input_data)
     term = Terminal()
     term.execute_commands(commands)
-    term.root.print_dirs()
 
+    # Get desired dirs total size
+    max_size = 100000
+    sizes = term.list_dir_sizes(term.root)
+    desired_sizes = [{k: s} for k, s in sizes.items() if s <= max_size]
+    total_size = sum([list(s.values())[0] for s in desired_sizes])
+    print("PART 1:", total_size)
 
 
 def part_2(input_data):
-    pass
+    commands = CommandUtils.parse_commands(input_data)
+    term = Terminal()
+    term.execute_commands(commands)
+
+    max_space = 70000000
+    needed_space = 30000000
+    total_used_space = term.root.get_dir_size()
+    space_left = max_space - total_used_space
+    space_to_free = needed_space - space_left
+
+    sizes = term.list_dir_sizes(term.root)
+    sorted_sizes = sorted(sizes.items(), key=lambda v: v[1])
+    print(sorted_sizes)
+    applicable_dirs = [d for d in sorted_sizes if d[1] >= space_to_free]
+    smallest_dir = applicable_dirs[0]
+    print("PART 2", smallest_dir)
 
 
 def main():

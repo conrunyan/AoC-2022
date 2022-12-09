@@ -116,6 +116,7 @@ def test_list_dir_sizes(sample_parsed_commands):
 
     assert sizes == expected
 
+
 def test_print_dirs(sample_parsed_commands):
     term = Terminal()
     term.execute_commands(sample_parsed_commands)
