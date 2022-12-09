@@ -1,3 +1,6 @@
+from uuid import uuid4
+
+
 def parse_input():
     with open("input.txt") as FH:
         return FH.readlines()
@@ -9,7 +12,7 @@ class File:
         self.size = size
 
     def __repr__(self):
-        return f"{str(self.size)} {self.name}"
+        return f"{self.name} (file, size={str(self.size)})"
 
 
 class Dir:
@@ -20,7 +23,7 @@ class Dir:
         self.name = name
 
     def __repr__(self):
-        return f"dir {self.name}"
+        return f"{self.name} (dir)"
 
     def add_sub_dir(self, name: str) -> "Dir":
         print(f"Adding '{name}' to {self}")
@@ -35,6 +38,20 @@ class Dir:
         file_sizes = [f.size for f in self.files]
         dir_sizes = [d.get_dir_size() for d in self.sub_dirs.values()]
         return sum([*file_sizes, *dir_sizes])
+
+    def print_files(self, indent: str = "", prefix: str = "- "):
+        for fl in self.files:
+            print(f"{indent}  {prefix}{fl}")
+
+    def print_dirs(self):
+        def _print_dirs(cur_dir: "Dir", indent: str = "", tab_size=2, prefix="- "):
+            print(f"{indent}{prefix}{cur_dir}")
+            cur_dir.print_files(indent, prefix)
+            indent += " " * tab_size
+            for sub_dir in cur_dir.sub_dirs.values():
+                _print_dirs(sub_dir, indent)
+
+        _print_dirs(self)
 
 
 class Command:
@@ -74,10 +91,15 @@ class Terminal:
 
     def cd(self, name: str):
         print(f"Moving from {self.cur_dir} to {name}")
-        self.cur_dir = self.cur_dir[name]
+        if name == "..":
+            self.cur_dir = self.cur_dir.parent
+        elif name == "/":
+            self.cur_dir = self.root
+        else:
+            self.cur_dir = self.cur_dir.sub_dirs[name]
+        print(f"PWD: {self.cur_dir}")
 
     def list_dir_sizes(self, target_dir: Dir) -> dict[str, int]:
-        print(f"Getting size of dir {target_dir}")
         dirs = {}
 
         # No more dirs to search. Get size and stop here.
@@ -118,12 +140,7 @@ class Terminal:
             # Handling directory movement
             if command.cmd.startswith("cd"):
                 _, target_dir = command.cmd.split()
-                if target_dir == "..":
-                    self.cur_dir = self.cur_dir.parent
-                elif target_dir == "/":
-                    self.cur_dir = self.root
-                else:
-                    self.cur_dir = self.cur_dir.sub_dirs[target_dir]
+                self.cd(target_dir)
 
             # Handling output of ls (technically just creates the directory and its content)
             elif command.cmd.startswith("ls"):
@@ -134,7 +151,11 @@ class Terminal:
 
 
 def part_1(input_data):
-    pass
+    commands = CommandUtils.parse_commands(input_data)
+    term = Terminal()
+    term.execute_commands(commands)
+    term.root.print_dirs()
+
 
 
 def part_2(input_data):
@@ -143,6 +164,8 @@ def part_2(input_data):
 
 def main():
     input_data = parse_input()
+    part_1(input_data)
+    part_2(input_data)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 import pytest
 
-from solution import Dir, File, Terminal, Command, CommandUtils
+from solution import Dir, Terminal, CommandUtils, Command
 
 
 @pytest.fixture
@@ -103,6 +103,9 @@ def test_execute_commands_cd(sample_parsed_commands):
     assert term.cur_dir.name == "d"
     assert term.root.get_dir_size() == 48381165
 
+    term.execute_commands([Command("cd ..")])
+    assert list(term.cur_dir.sub_dirs.keys()) == ["a", "d"]
+
 
 def test_list_dir_sizes(sample_parsed_commands):
     term = Terminal()
@@ -112,3 +115,8 @@ def test_list_dir_sizes(sample_parsed_commands):
     sizes = term.list_dir_sizes(term.root)
 
     assert sizes == expected
+
+def test_print_dirs(sample_parsed_commands):
+    term = Terminal()
+    term.execute_commands(sample_parsed_commands)
+    term.root.print_dirs()
